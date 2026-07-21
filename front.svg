@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 220.97 195.53">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: url(#linear-gradient-2);
+      }
+
+      .cls-2 {
+        fill: #faa21b;
+      }
+
+      .cls-3 {
+        fill: url(#linear-gradient);
+      }
+
+      .cls-4 {
+        fill: url(#linear-gradient-3);
+        stroke: #fff;
+        stroke-miterlimit: 10;
+        stroke-width: .5px;
+      }
+
+      .cls-5 {
+        fill: #ed2024;
+      }
+
+      .cls-6 {
+        fill: #6bbd45;
+      }
+    </style>
+    <linearGradient id="linear-gradient" x1="103.47" y1="53.35" x2="103.47" y2="195.53" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#767675"/>
+      <stop offset="1" stop-color="#464646"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-2" x1="122.97" y1="0" x2="122.97" y2="147.5" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#b8b7b7"/>
+      <stop offset="1" stop-color="#797978"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-3" x1="116.3" y1="26.7" x2="116.3" y2="174.2" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#dcdcdb"/>
+      <stop offset="1" stop-color="#acabaa"/>
+    </linearGradient>
+  </defs>
+  <circle class="cls-5" cx="114.16" cy="69.64" r="4.11"/>
+  <circle class="cls-2" cx="125.5" cy="69.64" r="4.11"/>
+  <circle class="cls-6" cx="136.83" cy="69.64" r="4.11"/>
+  <rect class="cls-3" y="53.35" width="206.95" height="142.18" rx="13.96" ry="13.96"/>
+  <rect class="cls-1" x="24.97" width="196" height="147.5" rx="13.83" ry="13.83"/>
+  <g>
+    <rect class="cls-4" x="42.55" y="26.7" width="147.5" height="147.5" rx="12" ry="12"/>
+    <circle class="cls-5" cx="53" cy="37.04" r="4.11"/>
+    <circle class="cls-2" cx="64.33" cy="37.04" r="4.11"/>
+    <circle class="cls-6" cx="75.67" cy="37.04" r="4.11"/>
+  </g>
+</svg>
