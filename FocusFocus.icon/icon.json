@@ -9,8 +9,33 @@
     {
       "layers" : [
         {
-          "image-name" : "front 2.svg",
-          "name" : "front 2",
+          "blend-mode" : "overlay",
+          "image-name" : "Asset 1.svg",
+          "name" : "Asset 1",
+          "position" : {
+            "scale" : 3.4,
+            "translation-in-points" : [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "hidden" : false,
+          "image-name" : "Asset 2.svg",
+          "name" : "Asset 2",
+          "position" : {
+            "scale" : 3.4,
+            "translation-in-points" : [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "hidden" : true,
+          "image-name" : "mac os icon.svg",
+          "name" : "mac os icon",
           "position" : {
             "scale" : 3.45,
             "translation-in-points" : [
