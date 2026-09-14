@@ -20,22 +20,22 @@
 
 ---
 
-## ✨ Features
+## Features
 
-- ⚡ **Virtually Zero Resource Usage**: Operates silently in the background with ~0% CPU at idle and a featherlight memory footprint. Fully event-driven with zero battery drain on MacBooks.
-- 🎯 **Multi-Layer Depth Dimming**: Progressively exaggerates depth by darkening each successive background layer in the window stack.
-- 🪟 **Active Window or Entire App**: Choose between dimming all other windows except the frontmost window, or keeping all windows of the active app bright together.
-- 🛡️ **Zero-Permission Standard Mode**: Works out of the box with **zero system permissions** required.
-- 🚀 **Optional Live Drag Tracking**: Grant Accessibility access only if you want real-time overlay tracking while actively dragging windows.
-- 🎨 **Custom Tint Colors**: Use classic dark tint or personalize with warm sepia, dark navy, or any system color hue.
-- 🪟 **Fade into Desktop Mode**: Optionally blends deeper background layers smoothly into your desktop wallpaper.
-- 🖥️ **Multi-Display & Space Aware**: Seamlessly updates across multiple monitors and macOS Spaces.
-- 🎛️ **Sleek Menu Bar Utility**: Zero-clutter status item with live toggle, reactive state icon, and instant preferences.
-- 🔒 **100% Offline & Private**: Zero data collection, no telemetry, no network calls, and runs strictly locally on your Mac.
+- **Virtually Zero Resource Usage**: Operates silently in the background with ~0% CPU at idle and a featherlight memory footprint. Fully event-driven with zero battery drain on MacBooks.
+- **Multi-Layer Depth Dimming**: Progressively exaggerates depth by darkening each successive background layer in the window stack.
+- **Active Window or Entire App**: Choose between dimming all other windows except the frontmost window, or keeping all windows of the active app bright together.
+- **Zero-Permission Standard Mode**: Works out of the box with **zero system permissions** required.
+- **Optional Live Drag Tracking**: Grant Accessibility access only if you want real-time overlay tracking while actively dragging windows.
+- **Custom Tint Colors**: Use classic dark tint or personalize with warm sepia, dark navy, or any system color hue.
+- **Fade into Desktop Mode**: Optionally blends deeper background layers smoothly into your desktop wallpaper.
+- **Multi-Display & Space Aware**: Seamlessly updates across multiple monitors and macOS Spaces.
+- **Sleek Menu Bar Utility**: Zero-clutter status item with live toggle, reactive state icon, and instant preferences.
+- **100% Offline & Private**: Zero data collection, no telemetry, no network calls, and runs strictly locally on your Mac.
 
 ---
 
-## ⚙️ How It Works
+## How It Works
 
 1. **Window Hierarchy Tracking**: FocusFocus inspects the on-screen window z-order via macOS `CGWindowListCopyWindowInfo` to determine the depth order of all visible windows.
 2. **Multi-Layer NSWindow Overlays**: For each detected layer, FocusFocus manages a non-interactive, borderless `NSWindow` overlay placed precisely between applications in the window stack.
@@ -47,7 +47,7 @@
 
 ---
 
-## 🎛️ Customization
+## Customization
 
 Access settings anytime by clicking the FocusFocus menu bar icon and selecting **Preferences...**:
 
@@ -63,7 +63,7 @@ Access settings anytime by clicking the FocusFocus menu bar icon and selecting *
 
 ---
 
-## 📥 Installation
+## Installation
 
 ### Option 1: Mac App Store
 > **Coming Soon** to the Mac App Store for automatic updates and one-click installation.
@@ -96,7 +96,7 @@ cp -R FocusFocus.app /Applications/
 
 ---
 
-## 🔐 Permissions & Privacy
+## Permissions & Privacy
 
 FocusFocus is built with user privacy and security at its foundation:
 
@@ -114,7 +114,7 @@ tccutil reset Accessibility com.robertdixon.FocusFocus
 
 ---
 
-## 🛠️ Repository Structure
+## Repository Structure
 
 ```
 FocusFocus/
@@ -138,7 +138,7 @@ FocusFocus/
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions, bug reports, and feature suggestions are welcome!
 1. Fork the repository
@@ -149,7 +149,7 @@ Contributions, bug reports, and feature suggestions are welcome!
 
 ---
 
-## 💖 Sponsor & Support
+## Sponsor & Support
 
 If you find FocusFocus helpful and want to support independent macOS development, consider becoming a sponsor:
 
@@ -157,6 +157,6 @@ If you find FocusFocus helpful and want to support independent macOS development
 
 ---
 
-## 📄 License
+## License
 
 FocusFocus is licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE). Free for personal and non-commercial use. Commercial distribution, resale, or sublicensing is strictly prohibited. Copyright © 2026 Robert Dixon.
