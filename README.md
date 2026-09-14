@@ -68,7 +68,7 @@ cp -R FocusFocus.app /Applications/
 
 ---
 
-## 🔐 Permissions & Privacy
+## Permissions & Privacy
 
 FocusFocus is built with user privacy and security at its foundation:
 
