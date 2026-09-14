@@ -16,7 +16,7 @@
 
 ---
 
-**FocusFocus** helps you find the window you're looking for by dimming background and inactive windows on macOS. FocusFocus features a multi-layer depth engine** that progressively darkens further windows—creating a natural, distraction-free visual depth hierarchy. The Fade into Background feature blends deeper layers into the desktop wallpaper instead of using a solid tint, offering a good balance between visual depth and performance. 
+**FocusFocus** helps you find the window you're looking for by dimming background and inactive windows on macOS. FocusFocus features multi-layering that progressively darkens further windows—creating a natural, distraction-free visual depth hierarchy. The Fade into Background feature blends deeper layers into the desktop wallpaper instead of using a solid tint, offering a good balance between visual depth and performance. 
 
 ---
 
@@ -32,34 +32,6 @@
 - **Multi-Display & Space Aware**: Seamlessly updates across multiple monitors and macOS Spaces.
 - **Sleek Menu Bar Utility**: Zero-clutter status item with live toggle, reactive state icon, and instant preferences.
 - **100% Offline & Private**: Zero data collection, no telemetry, no network calls, and runs strictly locally on your Mac.
-
----
-
-## How It Works
-
-1. **Window Hierarchy Tracking**: FocusFocus inspects the on-screen window z-order via macOS `CGWindowListCopyWindowInfo` to determine the depth order of all visible windows.
-2. **Multi-Layer NSWindow Overlays**: For each detected layer, FocusFocus manages a non-interactive, borderless `NSWindow` overlay placed precisely between applications in the window stack.
-3. **Dual Focus Modes**:
-   - **Active Window**: Each window in the z-stack occupies its own depth tier, keeping only the single focused window highlighted.
-   - **Entire App**: All windows belonging to the front application share the top tier, placing dimmers behind the entire app.
-4. **Smart Notification Monitoring**: FocusFocus listens to workspace activation, deactivation, and space change notifications with a fast 50ms coalesce for instant, battery-friendly response without continuous polling.
-5. **Desktop Wallpaper Synchronization**: When *Fade into Desktop* is enabled, `WallpaperManager` caches active desktop images per display and Space, cross-fading deeper layers into the desktop.
-
----
-
-## Customization
-
-Access settings anytime by clicking the FocusFocus menu bar icon and selecting **Preferences...**:
-
-| Setting | Options / Range | Description |
-| :--- | :--- | :--- |
-| **Enable Dimming** | On / Off | Instantly toggles dimming overlays. |
-| **Focus Scope** | Active Window / Entire App | Focus only the front window or all windows belonging to the active app. |
-| **Fade into Desktop** | On / Off | Blends deep layers into your desktop wallpaper rather than a solid tint. |
-| **Tint Color** | Color Picker | Custom overlay hue (e.g. warm amber, dark slate, deep black). |
-| **Base Darkness** | 0% – 80% | Controls darkness of the immediate background window layer. |
-| **Depth Multiplier** | 0% – 30% | Progressive darkness increase applied to each successive layer behind it. |
-| **Live Drag Tracking** | Enable (Optional) | Optional Accessibility access to update overlays while actively dragging windows. |
 
 ---
 
