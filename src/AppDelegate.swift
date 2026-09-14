@@ -21,6 +21,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var eventMonitor: Any?
     var updateTimer: Timer?
     var axObservers: [pid_t: AXObserver] = [:]
+    var isAccessibilityActive: Bool = false
     var menuController: MenuController!
     var cancellables = Set<AnyCancellable>()
     var lastBoundaryWindowsByScreen: [CGDirectDisplayID: [Int]] = [:]
@@ -36,18 +37,53 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Rebuild windows per screen
         rebuildScreenWindows()
         
-        // Listen for screen changes
+        // Listen for screen changes and system/display wake
         NotificationCenter.default.addObserver(self, selector: #selector(screenParametersDidChange), name: NSApplication.didChangeScreenParametersNotification, object: nil)
+        NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(screenOrSystemDidWake), name: NSWorkspace.didWakeNotification, object: nil)
+        NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(screenOrSystemDidWake), name: NSWorkspace.screensDidWakeNotification, object: nil)
         
-        Settings.shared.$isEnabled.sink { [weak self] isEnabled in
-            if isEnabled {
-                self?.setupEventMonitors()
-                self?.updateDimmer()
-            } else {
-                self?.teardownEventMonitors()
-                self?.hideAllDims()
+        // Listen for app becoming active to check if accessibility was granted in System Settings
+        NotificationCenter.default.addObserver(self, selector: #selector(checkAccessibilityUpgrade), name: NSApplication.didBecomeActiveNotification, object: nil)
+        
+        // Connect centralized WallpaperManager
+        WallpaperManager.shared.onWallpaperChange = { [weak self] in
+            guard let self = self else { return }
+            for group in self.layerGroups {
+                for dimWin in group.windowsByScreen.values {
+                    dimWin.updateWallpaperImage()
+                }
             }
-        }.store(in: &cancellables)
+        }
+        
+        Settings.shared.$isEnabled
+            .receive(on: RunLoop.main)
+            .sink { [weak self] isEnabled in
+                if isEnabled {
+                    self?.lastBoundaryWindowsByScreen.removeAll()
+                    self?.setupEventMonitors()
+                    self?.updateDimmer()
+                    self?.delayedUpdate()
+                } else {
+                    self?.teardownEventMonitors()
+                    self?.hideAllDims()
+                }
+            }.store(in: &cancellables)
+        
+        Settings.shared.$focusMode
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.lastBoundaryWindowsByScreen.removeAll()
+                self?.updateDimmer()
+            }.store(in: &cancellables)
+    }
+    
+    @objc func screenOrSystemDidWake() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            self?.rebuildScreenWindows()
+            self?.lastBoundaryWindowsByScreen.removeAll()
+            self?.updateDimmer()
+            WallpaperManager.shared.refreshAll()
+        }
     }
     
     @objc func screenParametersDidChange() {
@@ -75,35 +111,78 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func setupEventMonitors() {
-        let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
-        let isTrusted = AXIsProcessTrustedWithOptions(options)
+        // Zero-permission check: DO NOT prompt the user on launch!
+        let isTrusted = AXIsProcessTrusted()
         
         let ws = NSWorkspace.shared.notificationCenter
         ws.addObserver(self, selector: #selector(delayedUpdate), name: NSWorkspace.didActivateApplicationNotification, object: nil)
         ws.addObserver(self, selector: #selector(delayedUpdate), name: NSWorkspace.didDeactivateApplicationNotification, object: nil)
         ws.addObserver(self, selector: #selector(delayedUpdate), name: NSWorkspace.activeSpaceDidChangeNotification, object: nil)
+        ws.addObserver(self, selector: #selector(delayedUpdate), name: NSWorkspace.didHideApplicationNotification, object: nil)
+        ws.addObserver(self, selector: #selector(delayedUpdate), name: NSWorkspace.didUnhideApplicationNotification, object: nil)
         
         if isTrusted {
             setupAccessibility()
         } else {
+            setupFallbackMonitors()
+        }
+    }
+    
+    func setupFallbackMonitors() {
+        if eventMonitor == nil {
             eventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseUp, .rightMouseUp]) { [weak self] _ in
                 self?.delayedUpdate()
             }
-            
-            // Fallback timer to catch windows closing via unmonitored ways or slow animations
+        }
+        
+        // Gentle fallback timer to catch keyboard window navigation (Cmd+`) or window close
+        if updateTimer == nil {
             updateTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
                 self?.updateDimmer()
             }
         }
     }
     
+    func teardownFallbackMonitors() {
+        if let monitor = eventMonitor {
+            NSEvent.removeMonitor(monitor)
+            eventMonitor = nil
+        }
+        updateTimer?.invalidate()
+        updateTimer = nil
+    }
+    
+    @objc func checkAccessibilityUpgrade() {
+        guard Settings.shared.isEnabled else { return }
+        if !isAccessibilityActive && AXIsProcessTrusted() {
+            teardownFallbackMonitors()
+            setupAccessibility()
+            updateDimmer()
+        }
+    }
+    
     func setupAccessibility() {
+        guard !isAccessibilityActive else { return }
+        isAccessibilityActive = true
+        
         let ws = NSWorkspace.shared.notificationCenter
         ws.addObserver(self, selector: #selector(appDidLaunch(_:)), name: NSWorkspace.didLaunchApplicationNotification, object: nil)
         ws.addObserver(self, selector: #selector(appDidTerminate(_:)), name: NSWorkspace.didTerminateApplicationNotification, object: nil)
         
-        for app in NSWorkspace.shared.runningApplications {
-            addObserver(for: app)
+        // Fast-path: immediately attach to the frontmost application
+        if let frontApp = NSWorkspace.shared.frontmostApplication, frontApp.activationPolicy == .regular {
+            addObserver(for: frontApp)
+        }
+        
+        // Background-queue regular apps to prevent any unresponsive app from blocking the main thread
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            let regularApps = NSWorkspace.shared.runningApplications.filter { $0.activationPolicy == .regular }
+            DispatchQueue.main.async {
+                guard let self = self, self.isAccessibilityActive else { return }
+                for app in regularApps {
+                    self.addObserver(for: app)
+                }
+            }
         }
     }
     
@@ -120,7 +199,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func addObserver(for app: NSRunningApplication) {
+        // ONLY observe regular GUI applications that have windows (skip daemons, background services, etc.)
+        guard app.activationPolicy == .regular else { return }
         let pid = app.processIdentifier
+        guard pid != ProcessInfo.processInfo.processIdentifier else { return }
+        guard axObservers[pid] == nil else { return }
+        
         var observer: AXObserver?
         
         // SAFETY: passUnretained is used intentionally. AppDelegate is a singleton retained by
@@ -133,6 +217,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         let element = AXUIElementCreateApplication(pid)
+        // Prevent any slow or paused process from blocking the runloop during IPC
+        AXUIElementSetMessagingTimeout(element, 0.15)
+        
         let notifications: [String] = [
             kAXWindowCreatedNotification,
             kAXUIElementDestroyedNotification,
@@ -159,6 +246,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func teardownAccessibility() {
+        isAccessibilityActive = false
         let ws = NSWorkspace.shared.notificationCenter
         ws.removeObserver(self, name: NSWorkspace.didLaunchApplicationNotification, object: nil)
         ws.removeObserver(self, name: NSWorkspace.didTerminateApplicationNotification, object: nil)
@@ -173,38 +261,53 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ws.removeObserver(self, name: NSWorkspace.didActivateApplicationNotification, object: nil)
         ws.removeObserver(self, name: NSWorkspace.didDeactivateApplicationNotification, object: nil)
         ws.removeObserver(self, name: NSWorkspace.activeSpaceDidChangeNotification, object: nil)
+        ws.removeObserver(self, name: NSWorkspace.didHideApplicationNotification, object: nil)
+        ws.removeObserver(self, name: NSWorkspace.didUnhideApplicationNotification, object: nil)
         
-        if let monitor = eventMonitor {
-            NSEvent.removeMonitor(monitor)
-            eventMonitor = nil
-        }
+        teardownFallbackMonitors()
         
-        updateTimer?.invalidate()
-        updateTimer = nil
+        pendingUpdateWorkItem?.cancel()
+        pendingUpdateWorkItem = nil
+        pendingFollowUpWorkItem?.cancel()
+        pendingFollowUpWorkItem = nil
         
         teardownAccessibility()
     }
     
+    private var pendingUpdateWorkItem: DispatchWorkItem?
+    private var pendingFollowUpWorkItem: DispatchWorkItem?
+    
     @objc func delayedUpdate() {
-        // Add a slight delay to ensure the window server has updated its internal ordering
-        // before we query it after a click or app activation.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+        // Coalesce and debounce rapid notifications (e.g. window move/resize events)
+        pendingUpdateWorkItem?.cancel()
+        pendingFollowUpWorkItem?.cancel()
+        
+        // Fast-path: 50ms coalesce for immediate responsiveness
+        let primaryItem = DispatchWorkItem { [weak self] in
             self?.updateDimmer()
         }
-        // Additional delay to catch window close animations
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in
+        pendingUpdateWorkItem = primaryItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05, execute: primaryItem)
+        
+        // Follow-up: 350ms to catch window close animations
+        let followUpItem = DispatchWorkItem { [weak self] in
             self?.updateDimmer()
         }
+        pendingFollowUpWorkItem = followUpItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: followUpItem)
     }
     
     func hideAllDims() {
+        lastBoundaryWindowsByScreen.removeAll()
         for group in layerGroups {
             for dimWin in group.windowsByScreen.values {
                 NSAnimationContext.runAnimationGroup({ context in
-                    context.duration = 0.4
+                    context.duration = 0.25
                     dimWin.animator().alphaValue = 0.0
                 }, completionHandler: {
-                    dimWin.orderOut(nil)
+                    if !Settings.shared.isEnabled {
+                        dimWin.orderOut(nil)
+                    }
                 })
             }
         }
@@ -229,12 +332,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // We need the primary screen height to convert between the two systems.
         let mainScreenHeight = NSScreen.screens.first?.frame.height ?? 0
         
-        var boundaryWindowsByScreen: [CGDirectDisplayID: [Int]] = [:]
-        var currentPIDByScreen: [CGDirectDisplayID: Int32] = [:]
+        struct ScreenWindowInfo {
+            let windowID: Int
+            let ownerPID: Int32
+        }
+        
+        var visibleWindowsByScreen: [CGDirectDisplayID: [ScreenWindowInfo]] = [:]
         var screenIsFullscreen: [CGDirectDisplayID: Bool] = [:]
         
         for displayID in screensByDisplayID.keys {
-            boundaryWindowsByScreen[displayID] = []
+            visibleWindowsByScreen[displayID] = []
             screenIsFullscreen[displayID] = false
         }
         
@@ -293,20 +400,36 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 screenIsFullscreen[displayID] = true
             }
             
-            var boundaries = boundaryWindowsByScreen[displayID] ?? []
-            if boundaries.count >= MAX_LAYERS { continue }
+            visibleWindowsByScreen[displayID]?.append(ScreenWindowInfo(windowID: windowID, ownerPID: ownerPID))
+        }
+        
+        var boundaryWindowsByScreen: [CGDirectDisplayID: [Int]] = [:]
+        let focusMode = Settings.shared.focusMode
+        
+        for (displayID, windows) in visibleWindowsByScreen {
+            var boundaries: [Int] = []
             
-            let currentPID = currentPIDByScreen[displayID]
-            
-            if currentPID == nil {
-                currentPIDByScreen[displayID] = ownerPID
-                boundaries.append(windowID)
-                boundaryWindowsByScreen[displayID] = boundaries
-            } else if ownerPID != currentPID {
-                currentPIDByScreen[displayID] = ownerPID
-                boundaries.append(windowID)
-                boundaryWindowsByScreen[displayID] = boundaries
+            if focusMode == .singleWindow {
+                // Focus Active Window: Every window in the z-stack is its own depth tier
+                for w in windows {
+                    if boundaries.count >= MAX_LAYERS { break }
+                    boundaries.append(w.windowID)
+                }
+            } else {
+                // Focus Entire App: All windows belonging to the same app share a tier;
+                // the dimmer is placed below the LAST window of that app.
+                var i = 0
+                while i < windows.count && boundaries.count < MAX_LAYERS {
+                    let currentPID = windows[i].ownerPID
+                    var lastWindowOfApp = windows[i].windowID
+                    while i < windows.count && windows[i].ownerPID == currentPID {
+                        lastWindowOfApp = windows[i].windowID
+                        i += 1
+                    }
+                    boundaries.append(lastWindowOfApp)
+                }
             }
+            boundaryWindowsByScreen[displayID] = boundaries
         }
         
         if boundaryWindowsByScreen == lastBoundaryWindowsByScreen { return }
@@ -322,16 +445,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     let targetWindowID = boundaries[group.index]
                     dimWin.order(.below, relativeTo: targetWindowID)
                     
-                    if dimWin.alphaValue == 0 {
-                        dimWin.alphaValue = 1.0
+                    if dimWin.alphaValue < 1.0 {
+                        NSAnimationContext.runAnimationGroup { context in
+                            context.duration = 0.2
+                            dimWin.animator().alphaValue = 1.0
+                        }
                     }
                 } else {
                     if dimWin.alphaValue > 0 {
                         NSAnimationContext.runAnimationGroup({ context in
-                            context.duration = 0.4
+                            context.duration = 0.3
                             dimWin.animator().alphaValue = 0.0
                         }, completionHandler: {
-                            dimWin.orderOut(nil)
+                            if !Settings.shared.isEnabled || group.index >= (self.lastBoundaryWindowsByScreen[displayID]?.count ?? 0) {
+                                dimWin.orderOut(nil)
+                            }
                         })
                     }
                 }

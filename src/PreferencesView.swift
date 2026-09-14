@@ -25,6 +25,23 @@ struct PreferencesView: View {
             
             ColorPicker("Tint Color", selection: colorBinding)
             
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Focus Scope")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                Picker("", selection: $settings.focusMode) {
+                    ForEach(FocusMode.allCases) { mode in
+                        Text(mode.label).tag(mode)
+                    }
+                }
+                .pickerStyle(.segmented)
+                Text(settings.focusMode == .singleWindow 
+                    ? "Only the frontmost window stays bright; all other windows are dimmed."
+                    : "All windows belonging to the active application stay bright together.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
             VStack(alignment: .leading) {
                 Text("Base Darkness: \(Int(settings.baseDarkness * 100))%")
                 Slider(value: $settings.baseDarkness, in: 0.0...0.8, step: 0.01)
@@ -45,35 +62,36 @@ struct PreferencesView: View {
             
             Divider()
             
-            VStack(alignment: .leading, spacing: 5) {
+            VStack(alignment: .leading, spacing: 6) {
                 if isAccessibilityTrusted {
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundColor(.green)
-                        Text("Accessibility Access Granted")
+                        Text("Live Drag Tracking Active")
                             .font(.subheadline)
+                            .fontWeight(.semibold)
                     }
-                    Text("The app is using the efficient, low-CPU accessibility API.")
+                    Text("Real-time window tracking while dragging is active via macOS accessibility events.")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 } else {
                     HStack {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.yellow)
-                        Text("Accessibility Access Required")
+                        Image(systemName: "checkmark.shield.fill")
+                            .foregroundColor(.blue)
+                        Text("Standard Mode (Zero Permissions)")
                             .font(.subheadline)
-                            .fontWeight(.bold)
+                            .fontWeight(.semibold)
                     }
-                    Text("FocusFocus needs accessibility permissions to efficiently track window movements. Currently falling back to high-CPU polling.")
+                    Text("FocusFocus works out of the box with zero system permissions. Live Drag Tracking is an optional enhancement that follows windows in real time while actively dragging.")
                         .font(.caption)
                         .foregroundColor(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                     
-                    Button("Open System Settings") {
+                    Button("Enable Live Drag Tracking (Optional)") {
                         let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
                         _ = AXIsProcessTrustedWithOptions(options)
                     }
-                    .padding(.top, 2)
+                    .padding(.top, 4)
                 }
             }
             .padding(10)
@@ -83,10 +101,11 @@ struct PreferencesView: View {
                 let trusted = AXIsProcessTrusted()
                 if trusted != isAccessibilityTrusted {
                     isAccessibilityTrusted = trusted
+                    (NSApp.delegate as? AppDelegate)?.checkAccessibilityUpgrade()
                 }
             }
         }
         .padding()
-        .frame(width: 400, height: 480)
+        .frame(width: 400, height: 540)
     }
 }

@@ -1,15 +1,46 @@
-# macOS
+# macOS system files
 .DS_Store
+.AppleDouble
+.LSOverride
+Icon\r
+._*
 
 # Build artifacts
 *.app/
-depthfocus
-
-# Xcode
-*.xcodeproj/
-*.xcworkspace/
+*.dSYM/
 build/
 DerivedData/
 *.o
 *.d
 *.swp
+*.swo
+*~
+
+# Swift Package Manager & Module Cache
+.build/
+.swiftpm/
+
+# Xcode User Data & Schemes
+*.xcuserstate
+xcuserdata/
+*.xcbkptlist
+
+# Code signing & certificates (never commit private keys)
+*.p12
+*.cer
+*.mobileprovision
+*.provisionprofile
+*.p8
+*.pem
+
+# Local environment & archives
+*.xcarchive
+*.pkg
+*.dmg
+.env
+.env.*
+*.log
+
+# IDE & Editor files
+.vscode/
+.idea/

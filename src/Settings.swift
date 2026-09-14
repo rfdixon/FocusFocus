@@ -2,8 +2,26 @@ import Cocoa
 import Foundation
 import Combine
 
+enum FocusMode: String, CaseIterable, Identifiable {
+    case singleWindow = "singleWindow"
+    case singleApp = "singleApp"
+    
+    var id: String { rawValue }
+    
+    var label: String {
+        switch self {
+        case .singleWindow: return "Active Window"
+        case .singleApp: return "Entire App"
+        }
+    }
+}
+
 class Settings: ObservableObject {
     static let shared = Settings()
+    
+    @Published var focusMode: FocusMode {
+        didSet { UserDefaults.standard.set(focusMode.rawValue, forKey: "focusMode") }
+    }
     
     @Published var baseDarkness: Double {
         didSet { UserDefaults.standard.set(baseDarkness, forKey: "baseDarkness") }
@@ -33,6 +51,13 @@ class Settings: ObservableObject {
     // UserDefaults writes in each `didSet` will only trigger on subsequent user changes,
     // not during initial load from UserDefaults here.
     private init() {
+        if let modeRaw = UserDefaults.standard.string(forKey: "focusMode"),
+           let mode = FocusMode(rawValue: modeRaw) {
+            self.focusMode = mode
+        } else {
+            self.focusMode = .singleWindow
+        }
+        
         if UserDefaults.standard.object(forKey: "baseDarkness") == nil {
             UserDefaults.standard.set(0.15, forKey: "baseDarkness")
         }

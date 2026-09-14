@@ -2,14 +2,20 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
     <key>CFBundleExecutable</key>
     <string>FocusFocus</string>
     <key>CFBundleIdentifier</key>
     <string>com.robertdixon.FocusFocus</string>
     <key>CFBundleName</key>
     <string>FocusFocus</string>
+    <key>CFBundleDisplayName</key>
+    <string>FocusFocus</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.0</string>
+    <string>1.0.0</string>
     <key>CFBundleVersion</key>
     <string>1</string>
     <key>LSMinimumSystemVersion</key>
@@ -18,7 +24,9 @@
     <true/>
     <key>NSHighResolutionCapable</key>
     <true/>
+    <key>NSHumanReadableCopyright</key>
+    <string>Copyright © 2026 Robert Dixon. All rights reserved.</string>
     <key>NSAccessibilityUsageDescription</key>
-    <string>FocusFocus requires accessibility permissions to read window positions to dim the background.</string>
+    <string>FocusFocus uses accessibility only if you enable optional Live Drag Tracking to smoothly follow windows while you drag them.</string>
 </dict>
 </plist>
