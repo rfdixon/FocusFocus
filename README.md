@@ -79,38 +79,11 @@ FocusFocus is built with user privacy and security at its foundation:
 - See our [Privacy Policy](PRIVACY.md) for complete details.
 
 ### Troubleshooting Permissions
-If you reinstall or rebuild with a new signature, macOS may occasionally retain stale Accessibility permission entries. You can reset it via Terminal:
-```bash
-tccutil reset Accessibility com.robertdixon.FocusFocus
-```
+If you reinstall or rebuild with a new signature, macOS may occasionally retain stale Accessibility permission entries. You may need to toggle it on and off in the Accessibility settings to clear the old permission. 
 
 ---
 
-## 🛠️ Repository Structure
-
-```
-FocusFocus/
-├── Info.plist                # App bundle configuration & metadata
-├── FocusFocus.entitlements   # App entitlements
-├── AppIcon.icns              # Multi-resolution macOS application icon
-├── build.sh                  # One-step build & code-signing script
-├── assets/                   # README banner, vector source, and icon exports
-├── src/
-│   ├── main.swift            # Entry point & activation policy
-│   ├── AppDelegate.swift     # Window layering engine & AXObserver lifecycle
-│   ├── DimWindow.swift       # Layer-backed overlay window view
-│   ├── MenuController.swift  # Status bar icon & menu controller
-│   ├── PreferencesView.swift # SwiftUI preferences interface
-│   ├── Settings.swift        # Observable persistent UserDefaults settings
-│   └── WallpaperManager.swift# Space-aware desktop wallpaper caching
-├── debug/                    # Standalone diagnostic scripts for window inspection
-├── LICENSE                   # PolyForm Noncommercial 1.0.0 License
-└── PRIVACY.md                # Privacy policy
-```
-
----
-
-## 🤝 Contributing
+## Contributing
 
 Contributions, bug reports, and feature suggestions are welcome!
 1. Fork the repository
@@ -121,7 +94,7 @@ Contributions, bug reports, and feature suggestions are welcome!
 
 ---
 
-## 💖 Sponsor & Support
+## Sponsor & Support
 
 If you find FocusFocus helpful and want to support independent macOS development, consider becoming a sponsor:
 
@@ -129,6 +102,6 @@ If you find FocusFocus helpful and want to support independent macOS development
 
 ---
 
-## 📄 License
+## License
 
 FocusFocus is licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE). Free for personal and non-commercial use. Commercial distribution, resale, or sublicensing is strictly prohibited. Copyright © 2026 Robert Dixon.
