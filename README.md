@@ -16,13 +16,13 @@
 
 ---
 
-**FocusFocus** helps you stay in the flow by gently dimming background and inactive windows on macOS. Unlike simple single-shade dimmers, FocusFocus features an intelligent **multi-layer depth engine** that progressively darkens further windows—creating a natural, distraction-free visual depth hierarchy.
+**FocusFocus** helps you find the window you're looking for by dimming background and inactive windows on macOS. FocusFocus features a multi-layer depth engine** that progressively darkens further windows—creating a natural, distraction-free visual depth hierarchy. The Fade into Background feature blends deeper layers into the desktop wallpaper instead of using a solid tint, offering a good balance between visual depth and performance. 
 
 ---
 
 ## Features
 
-- **Virtually Zero Resource Usage**: Operates silently in the background with ~0% CPU at idle and a featherlight memory footprint. Fully event-driven with zero battery drain on MacBooks.
+- **Virtually Zero Resource Usage**: Operates silently in the background with ~0% CPU at idle and a low memory footprint. Fully event-driven with zero battery drain on MacBooks.
 - **Multi-Layer Depth Dimming**: Progressively exaggerates depth by darkening each successive background layer in the window stack.
 - **Active Window or Entire App**: Choose between dimming all other windows except the frontmost window, or keeping all windows of the active app bright together.
 - **Zero-Permission Standard Mode**: Works out of the box with **zero system permissions** required.
@@ -96,7 +96,7 @@ cp -R FocusFocus.app /Applications/
 
 ---
 
-## Permissions & Privacy
+## 🔐 Permissions & Privacy
 
 FocusFocus is built with user privacy and security at its foundation:
 
@@ -114,7 +114,7 @@ tccutil reset Accessibility com.robertdixon.FocusFocus
 
 ---
 
-## Repository Structure
+## 🛠️ Repository Structure
 
 ```
 FocusFocus/
@@ -138,7 +138,7 @@ FocusFocus/
 
 ---
 
-## Contributing
+## 🤝 Contributing
 
 Contributions, bug reports, and feature suggestions are welcome!
 1. Fork the repository
@@ -149,7 +149,7 @@ Contributions, bug reports, and feature suggestions are welcome!
 
 ---
 
-## Sponsor & Support
+## 💖 Sponsor & Support
 
 If you find FocusFocus helpful and want to support independent macOS development, consider becoming a sponsor:
 
@@ -157,6 +157,6 @@ If you find FocusFocus helpful and want to support independent macOS development
 
 ---
 
-## License
+## 📄 License
 
 FocusFocus is licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE). Free for personal and non-commercial use. Commercial distribution, resale, or sublicensing is strictly prohibited. Copyright © 2026 Robert Dixon.
