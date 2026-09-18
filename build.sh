@@ -23,8 +23,15 @@ if [ -f "AppIcon.icns" ]; then
     cp AppIcon.icns "$RESOURCES_DIR/"
 fi
 
-# Compile Swift files
-swiftc -module-cache-path "$BUILD_CACHE" src/*.swift -o "$MACOS_DIR/$APP_NAME"
+# Compile Swift files as a universal binary (arm64 + x86_64), pinned to the
+# minimum deployment target declared in Info.plist. Without an explicit
+# -target, swiftc defaults to the host machine's SDK version, which silently
+# raises the app's real minimum OS requirement above what Info.plist claims.
+DEPLOYMENT_TARGET="12.0"
+swiftc -module-cache-path "$BUILD_CACHE" -target "arm64-apple-macos${DEPLOYMENT_TARGET}" src/*.swift -o "$MACOS_DIR/${APP_NAME}-arm64"
+swiftc -module-cache-path "$BUILD_CACHE" -target "x86_64-apple-macos${DEPLOYMENT_TARGET}" src/*.swift -o "$MACOS_DIR/${APP_NAME}-x86_64"
+lipo -create "$MACOS_DIR/${APP_NAME}-arm64" "$MACOS_DIR/${APP_NAME}-x86_64" -output "$MACOS_DIR/$APP_NAME"
+rm "$MACOS_DIR/${APP_NAME}-arm64" "$MACOS_DIR/${APP_NAME}-x86_64"
 
 # Ad-hoc sign with entitlements for local testing
 if [ -f "FocusFocus.entitlements" ]; then
