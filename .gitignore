@@ -37,6 +37,7 @@ xcuserdata/
 *.xcarchive
 *.pkg
 *.dmg
+*.zip
 .env
 .env.*
 *.log
