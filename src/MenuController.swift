@@ -5,6 +5,7 @@ import Combine
 class MenuController: NSObject, NSWindowDelegate {
     var statusItem: NSStatusItem!
     var preferencesWindow: NSWindow?
+    private var stageManagerStatusItem: NSMenuItem?
     private var cancellables = Set<AnyCancellable>()
     
     override init() {
@@ -30,11 +31,21 @@ class MenuController: NSObject, NSWindowDelegate {
         toggleItem.state = Settings.shared.isEnabled ? .on : .off
         menu.addItem(toggleItem)
         
+        let smItem = NSMenuItem(title: "Stage Manager Active (Paused)", action: nil, keyEquivalent: "")
+        smItem.isEnabled = false
+        smItem.isHidden = true
+        menu.addItem(smItem)
+        self.stageManagerStatusItem = smItem
+        
         menu.addItem(NSMenuItem.separator())
         
         let prefItem = NSMenuItem(title: "Preferences...", action: #selector(openPreferences), keyEquivalent: ",")
         prefItem.target = self
         menu.addItem(prefItem)
+        
+        let supportItem = NSMenuItem(title: "Support", action: #selector(openSupport), keyEquivalent: "")
+        supportItem.target = self
+        menu.addItem(supportItem)
         
         menu.addItem(NSMenuItem.separator())
         
@@ -49,6 +60,15 @@ class MenuController: NSObject, NSWindowDelegate {
         }
         if let toggleItem = statusItem.menu?.items.first {
             toggleItem.state = isEnabled ? .on : .off
+        }
+    }
+    
+    func setStageManagerPaused(_ isPaused: Bool) {
+        stageManagerStatusItem?.isHidden = !isPaused
+        if isPaused {
+            statusItem.button?.toolTip = "FocusFocus (Paused - Stage Manager Active)"
+        } else {
+            statusItem.button?.toolTip = "FocusFocus"
         }
     }
     
@@ -159,5 +179,11 @@ class MenuController: NSObject, NSWindowDelegate {
     
     func windowWillClose(_ notification: Notification) {
         preferencesWindow = nil
+    }
+    
+    @objc func openSupport() {
+        if let url = URL(string: "https://github.com/sponsors/rfdixon") {
+            NSWorkspace.shared.open(url)
+        }
     }
 }

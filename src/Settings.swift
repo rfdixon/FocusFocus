@@ -39,6 +39,10 @@ class Settings: ObservableObject {
         didSet { UserDefaults.standard.set(fadeIntoDesktop, forKey: "fadeIntoDesktop") }
     }
     
+    @Published var pauseInStageManager: Bool {
+        didSet { UserDefaults.standard.set(pauseInStageManager, forKey: "pauseInStageManager") }
+    }
+    
     @Published var tintColor: NSColor {
         didSet {
             if let data = try? NSKeyedArchiver.archivedData(withRootObject: tintColor, requiringSecureCoding: false) {
@@ -77,6 +81,11 @@ class Settings: ObservableObject {
             UserDefaults.standard.set(false, forKey: "fadeIntoDesktop")
         }
         self.fadeIntoDesktop = UserDefaults.standard.bool(forKey: "fadeIntoDesktop")
+        
+        if UserDefaults.standard.object(forKey: "pauseInStageManager") == nil {
+            UserDefaults.standard.set(true, forKey: "pauseInStageManager")
+        }
+        self.pauseInStageManager = UserDefaults.standard.bool(forKey: "pauseInStageManager")
         
         if let data = UserDefaults.standard.data(forKey: "tintColor"),
            let color = try? NSKeyedUnarchiver.unarchivedObject(ofClass: NSColor.self, from: data) {

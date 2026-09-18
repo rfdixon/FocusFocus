@@ -6,7 +6,7 @@
 
 ### Elegant Multi-Layer Window Dimmer for macOS
 
-[![Platform](https://img.shields.io/badge/platform-macOS%2012.0%2B-blue.svg?style=flat-square)](https://apple.com/macos)
+[![Platform](https://img.shields.io/badge/platform-macOS%2012.0%2B%20%7C%20Golden%20Gate-blue.svg?style=flat-square)](https://apple.com/macos)
 [![License](https://img.shields.io/badge/license-PolyForm%20Noncommercial-blue.svg?style=flat-square)](LICENSE)
 [![Swift](https://img.shields.io/badge/Swift-5.9%2B-orange.svg?style=flat-square)](https://swift.org)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%99%A5-ea4aaa.svg?style=flat-square&logo=githubsponsors)](https://github.com/sponsors/rfdixon)
@@ -30,6 +30,8 @@
 - **Custom Tint Colors**: Use classic dark tint or personalize with warm sepia, dark navy, or any system color hue.
 - **Fade into Desktop Mode**: Optionally blends deeper background layers smoothly into your desktop wallpaper.
 - **Multi-Display & Space Aware**: Seamlessly updates across multiple monitors and macOS Spaces.
+- **Stage Manager & Mission Control Friendly**: Automatically detects macOS Stage Manager and gracefully pauses dimming overlays to avoid visual conflicts with stage sets and transition animations.
+- **Modern macOS Support**: Fully compatible with macOS 12.0 (Monterey) through the newest **macOS Golden Gate**.
 - **Sleek Menu Bar Utility**: Zero-clutter status item with live toggle, reactive state icon, and instant preferences.
 - **100% Offline & Private**: Zero data collection, no telemetry, no network calls, and runs strictly locally on your Mac.
 
@@ -45,7 +47,7 @@
 FocusFocus is source-available and free for personal use under the [PolyForm Noncommercial License 1.0.0](LICENSE). You can clone and build it locally in seconds:
 
 #### Prerequisites
-- macOS 12.0 (Monterey) or later
+- macOS 12.0 (Monterey) or later (including the newest **macOS Golden Gate**)
 - Xcode Command Line Tools (`xcode-select --install`)
 
 #### Build Steps

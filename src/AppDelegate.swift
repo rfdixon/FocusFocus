@@ -25,6 +25,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var menuController: MenuController!
     var cancellables = Set<AnyCancellable>()
     var lastBoundaryWindowsByScreen: [CGDirectDisplayID: [Int]] = [:]
+    var isStageManagerPaused: Bool = false
+    var stageManagerCheckTimer: Timer?
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         menuController = MenuController()
@@ -75,6 +77,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 self?.lastBoundaryWindowsByScreen.removeAll()
                 self?.updateDimmer()
             }.store(in: &cancellables)
+            
+        Settings.shared.$pauseInStageManager
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.evaluateStageManagerState()
+            }.store(in: &cancellables)
+            
+        stageManagerCheckTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            self?.evaluateStageManagerState()
+        }
+        
+        setupDarwinNotifications()
+        evaluateStageManagerState()
     }
     
     @objc func screenOrSystemDidWake() {
@@ -297,6 +312,54 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: followUpItem)
     }
     
+    static func isStageManagerActive() -> Bool {
+        CFPreferencesAppSynchronize("com.apple.WindowManager" as CFString)
+        guard let val = CFPreferencesCopyAppValue("GloballyEnabled" as CFString, "com.apple.WindowManager" as CFString) else {
+            return false
+        }
+        if CFGetTypeID(val) == CFBooleanGetTypeID() {
+            return CFBooleanGetValue((val as! CFBoolean))
+        }
+        if let num = val as? NSNumber {
+            return num.boolValue
+        }
+        return false
+    }
+    
+    @discardableResult
+    func evaluateStageManagerState() -> Bool {
+        let isSM = AppDelegate.isStageManagerActive()
+        let shouldPause = Settings.shared.isEnabled && Settings.shared.pauseInStageManager && isSM
+        
+        if shouldPause != isStageManagerPaused {
+            isStageManagerPaused = shouldPause
+            menuController?.setStageManagerPaused(shouldPause)
+            
+            if shouldPause {
+                hideAllDims()
+            } else if Settings.shared.isEnabled {
+                lastBoundaryWindowsByScreen.removeAll()
+                updateDimmer()
+            }
+        }
+        
+        return shouldPause
+    }
+    
+    private func setupDarwinNotifications() {
+        let darwinCenter = CFNotificationCenterGetDarwinNotifyCenter()
+        let smCallback: CFNotificationCallback = { _, observer, _, _, _ in
+            guard let observer = observer else { return }
+            let appDelegate = Unmanaged<AppDelegate>.fromOpaque(observer).takeUnretainedValue()
+            DispatchQueue.main.async {
+                appDelegate.evaluateStageManagerState()
+            }
+        }
+        let observerPtr = UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque())
+        CFNotificationCenterAddObserver(darwinCenter, observerPtr, smCallback, "com.apple.WindowManager.GloballyEnabled" as CFString, nil, .deliverImmediately)
+        CFNotificationCenterAddObserver(darwinCenter, observerPtr, smCallback, "com.apple.WindowManager.settings-changed" as CFString, nil, .deliverImmediately)
+    }
+    
     func hideAllDims() {
         lastBoundaryWindowsByScreen.removeAll()
         for group in layerGroups {
@@ -304,8 +367,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 NSAnimationContext.runAnimationGroup({ context in
                     context.duration = 0.25
                     dimWin.animator().alphaValue = 0.0
-                }, completionHandler: {
-                    if !Settings.shared.isEnabled {
+                }, completionHandler: { [weak self] in
+                    if !Settings.shared.isEnabled || self?.isStageManagerPaused == true {
                         dimWin.orderOut(nil)
                     }
                 })
@@ -315,6 +378,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     @objc func updateDimmer() {
         guard Settings.shared.isEnabled else { return }
+        if evaluateStageManagerState() { return }
         
         let options = CGWindowListOption(arrayLiteral: .optionOnScreenOnly, .excludeDesktopElements)
         guard let windowInfoList = CGWindowListCopyWindowInfo(options, kCGNullWindowID) as? [[String: Any]] else { return }
@@ -456,8 +520,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                         NSAnimationContext.runAnimationGroup({ context in
                             context.duration = 0.3
                             dimWin.animator().alphaValue = 0.0
-                        }, completionHandler: {
-                            if !Settings.shared.isEnabled || group.index >= (self.lastBoundaryWindowsByScreen[displayID]?.count ?? 0) {
+                        }, completionHandler: { [weak self] in
+                            if !Settings.shared.isEnabled || self?.isStageManagerPaused == true || group.index >= (self?.lastBoundaryWindowsByScreen[displayID]?.count ?? 0) {
                                 dimWin.orderOut(nil)
                             }
                         })
