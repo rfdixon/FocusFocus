@@ -10,7 +10,6 @@
 [![License](https://img.shields.io/badge/license-PolyForm%20Noncommercial-blue.svg?style=flat-square)](LICENSE)
 [![Swift](https://img.shields.io/badge/Swift-5.9%2B-orange.svg?style=flat-square)](https://swift.org)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%99%A5-ea4aaa.svg?style=flat-square&logo=githubsponsors)](https://github.com/sponsors/rfdixon)
-[![Mac App Store](https://img.shields.io/badge/Mac%20App%20Store-Coming%20Soon-black.svg?style=flat-square&logo=apple)](https://apps.apple.com)
 
 </div>
 
@@ -39,10 +38,7 @@
 
 ## Installation
 
-### Option 1: Mac App Store
-> **Coming Soon** to the Mac App Store for automatic updates and one-click installation.
-
-### Option 2: Build from Source (Free)
+### Build from Source (Free)
 
 FocusFocus is source-available and free for personal use under the [PolyForm Noncommercial License 1.0.0](LICENSE). You can clone and build it locally in seconds:
 
